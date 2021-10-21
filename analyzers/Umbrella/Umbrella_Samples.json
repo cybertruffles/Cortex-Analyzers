@@ -1,0 +1,48 @@
+{
+  "name": "Umbrella_Samples",
+  "version": "1.0",
+  "author": "Darren Sherman",
+  "license": "MIT",
+  "url": "https://github.com/cybertruffles/Cortex-Analyzers/",
+  "description": "Query the Umbrella Investigate API for samples",
+  "dataTypeList": [
+    "domain",
+    "ip",
+    "url",
+    "hash"
+  ],
+  "command": "Umbrella/Umbrella.py",
+  "baseConfig": "Umbrella",
+  "config": {
+    "check_tlp": true,
+    "max_tlp": 2,
+    "check_pap": true,
+    "max_pap": 2,
+    "service": "Samples"
+  },
+  "configurationItems": [
+    {
+      "name": "access_token",
+      "description": "Access token provided by Umbrella Investigate Console.",
+      "type": "string",
+      "multi": false,
+      "required": true
+    },
+    {
+      "name": "sample_safe_limit",
+      "description": "Upper limit for samples considered safe",
+      "type": "number",
+      "multi": false,
+      "required": false,
+      "defaultValue": 30
+    },
+    {
+      "name": "sample_suspicious_limit",
+      "description": "Upper limit for samples considered suspicious",
+      "type": "number",
+      "multi": false,
+      "required": false,
+      "defaultValue": 50
+    }
+  ]
+}

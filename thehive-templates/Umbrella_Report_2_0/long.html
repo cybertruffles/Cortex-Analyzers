@@ -1,0 +1,98 @@
+<!-- General error  -->
+<div class="panel panel-danger" ng-if="!success">
+    <div class="panel-heading">
+        <strong>{{(artifact.data || artifact.attachment.name) | fang}}</strong>
+    </div>
+    <div class="panel-body">
+        <dl class="dl-horizontal" ng-if="content.errorMessage">
+            <dt><i class="fa fa-warning"></i> Umbrella Report:</dt>
+            <dd class="wrap">{{content.errorMessage}}</dd>
+        </dl>
+    </div>
+</div>
+
+<!-- Success -->
+<div class="panel panel-info" ng-if="success && content.data.length > 0">
+    <div class="panel-heading">
+        Umbrella Report
+    </div>
+    <div class="panel-body">
+        <uib-tabset active="active">
+            <uib-tab ng-repeat="item in content.data">
+                <uib-tab-heading>{{item.meta}}</uib-tab-heading>
+                <table class="table table-hover" ng-if="item.data.length > 0 && $index == 0">
+                    <thead>
+                    <tr>
+                        <th>Organization</th>
+                        <th>Unique IPs</th>
+                        <th>Hits</th>
+                        <th>First Hit</th>
+                        <th>Last Hit</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="r in item.data" ng-if="r.unique_ips > 0 && r.total_hits > 0">
+                        <td>{{r.organization}}</td>
+                        <td>{{r.unique_ips}}</td>
+                        <td>{{r.total_hits}}</td>
+                        <td>{{r.datetime_first}}</td>
+                        <td>{{r.datetime_last}}</td>
+                    </tr>
+                    <tr ng-repeat="r in item.data" ng-if="r.unique_ips == 0 && r.total_hits == 0">
+                        <td>{{r.organization}}</td>
+                        <td>No recent hits.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="table table-hover" ng-if="item.data.length > 0 && $index > 0">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                        <th>Identities</th>
+                        <th>Internal IP</th>
+                        <th>External IP</th>
+                        <th>Destination</th>
+                        <th>Categories</th>
+                        <th>Query Type</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="r in item.data">
+                        <td>{{$index + 1}}</td>
+                        <td>{{r.date}}</td>
+                        <td>{{r.time}}</td>
+                        <td>{{r.verdict}}</td>
+                        <td>
+                            <div ng-repeat="i in r.identities">{{i.label}}</div>
+                        </td>
+                        <td>{{r.internalip}}</td>
+                        <td>{{r.externalip}}</td>
+                        <td>{{r.domain}}</td>
+                        <td>
+                            <div ng-repeat="i in r.categories">{{i.label}}</div>
+                        </td>
+                        <td>{{r.querytype}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="panel panel-info" ng-if="item.data.length == 0">
+                    <div class="panel-body">
+                        <b>No recent hits.</b>
+                    </div>
+                </div>
+            </uib-tab>
+        </uib-tabset>
+    </div>
+</div>
+
+<div class="panel panel-info" ng-if="success && content.data.length == 0">
+    <div class="panel-heading">
+        Umbrella Report
+    </div>
+    <div class="panel-body">
+        <b>No recent hits.</b>
+    </div>
+</div>

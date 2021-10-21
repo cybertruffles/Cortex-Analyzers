@@ -1,0 +1,262 @@
+<!-- General error  -->
+<div class="panel panel-danger" ng-if="!success">
+    <div class="panel-heading">
+        <strong>{{(artifact.data || artifact.attachment.name) | fang}}</strong>
+    </div>
+    <div class="panel-body">
+        <dl class="dl-horizontal" ng-if="content.errorMessage">
+            <dt><i class="fa fa-warning"></i> Umbrella Report:</dt>
+            <dd class="wrap">{{content.errorMessage}}</dd>
+        </dl>
+    </div>
+</div>
+
+<!-- Success -->
+<div class="panel panel-info" ng-if="success && content.data.length > 0">
+    <div class="panel-heading">
+        Umbrella Report
+    </div>
+    <div class="panel-body">
+        <uib-tabset active="active">
+            <uib-tab ng-repeat="item in content.data" ng-if="item.records.error or item.samples.error">
+                <uib-tab-heading>Errors</uib-tab-heading>
+                <div class="panel panel-danger">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{item.meta}}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <b>{{item.records.error}}</b>
+                    </div>
+                </div>
+            </uib-tab>
+            <uib-tab ng-repeat="item in content.data"
+                     ng-if="item.records && item.meta === 'Hash' && !item.records.error"
+                     ng-class="{'label-success' : item.records.threatScore <= content.limits.safe_limit,
+                                                 'label-warning' :  item.records.threatScore > content.limits.safe_limit && item.records.threatScore <= content.limits.sus_limit,
+                                                 'label-danger': item.records.threatScore > content.limits.sus_limit}">
+                <uib-tab-heading>{{item.meta}}</uib-tab-heading>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <tr>
+                            <td>Threat Score</td>
+                            <td>
+                                <span class="label"
+                                      ng-class="{'label-success' : item.records.threatScore <= content.limits.safe_limit,
+                                                 'label-warning' :  item.records.threatScore > content.limits.safe_limit && item.records.threatScore <= content.limits.sus_limit,
+                                                 'label-danger': item.records.threatScore > content.limits.sus_limit}">
+                                    {{item.records.threatScore}}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>SHA256</td>
+                            <td>{{item.records.sha256}}</td>
+                        </tr>
+                        <tr>
+                            <td>SHA1</td>
+                            <td>{{item.records.sha1}}</td>
+                        </tr>
+                        <tr>
+                            <td>MD5</td>
+                            <td>{{item.records.md5}}</td>
+                        </tr>
+                        <tr>
+                            <td>File Type</td>
+                            <td>{{item.records.magicType}}</td>
+                        </tr>
+                        <tr>
+                            <td>First Seen</td>
+                            <td>{{item.records.firstSeen | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
+                        </tr>
+                        <tr>
+                            <td>Last Seen</td>
+                            <td>{{item.records.lastSeen | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">AV Result</h3>
+                        </div>
+
+                        <table class="table table-hover table-striped table-bordered table-condensed"
+                               ng-if="item.records.avresults.length > 0">
+                            <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Signature</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="i in item.records.avresults | orderBy:'product'"
+                                ng-if="i.signature !== '(' && i.signature !== ')'">
+                                <td>{{i.product}}</td>
+                                <td>{{i.signature}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </uib-tab>
+            <uib-tab ng-repeat="item in content.data"
+                     ng-if="item.samples.length > 0 && item.meta === 'Samples'">
+                <uib-tab-heading>{{item.meta}}</uib-tab-heading>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <thead>
+                        <tr>
+                            <th>Threat Score</th>
+                            <th>MD5</th>
+                            <th>AV Result</th>
+                            <th>File Type</th>
+                            <th>First Seen</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="r in item.samples | orderBy:'-threatScore'">
+                            <td>
+                                <span class="label"
+                                      ng-class="{'label-success' : r.threatScore <= content.limits.safe_limit,
+                                                 'label-warning' :  r.threatScore > content.limits.safe_limit && r.threatScore <= content.limits.sus_limit,
+                                                 'label-danger': r.threatScore > content.limits.sus_limit}">
+                                    {{r.threatScore}}
+                                </span>
+                            </td>
+                            <td>{{r.md5}}</td>
+                            <td>
+                                <table class="table table-striped" ng-if="r.avresults.length > 0">
+                                    <thead>
+                                    <tr>
+                                        <th>Signature</th>
+                                        <th>Product</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="i in r.avresults | orderBy:'product'"
+                                        ng-if="i.signature !== '(' && i.signature !== ')'">
+                                        <td>{{i.signature}}</td>
+                                        <td>{{i.product}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>{{r.magicType}}</td>
+                            <td>{{r.firstSeen | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </uib-tab>
+            <uib-tab ng-repeat="item in content.data"
+                     ng-if="item.records.length > 0 && item.meta === 'Hash Behaviors'">
+                <uib-tab-heading>{{item.meta}}</uib-tab-heading>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Severity</th>
+                            <th>Confidence</th>
+                            <th>Tags</th>
+                            <th>Threat</th>
+                            <th>Category</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="r in item.records | orderBy:['-severity','-confidence']">
+                            <td>{{r.title}}</td>
+                            <td>
+                                <span class="label"
+                                      ng-class="{'label-success' : r.severity <= content.limits.safe_limit,
+                                                 'label-warning' :  r.severity > content.limits.safe_limit && r.severity <= content.limits.sus_limit,
+                                                 'label-danger': r.severity > content.limits.sus_limit}">
+                                    {{r.severity}}
+                                </span>
+                            </td>
+                            <td>{{r.confidence}}</td>
+                            <td>
+                                <div ng-repeat="i in r.tags">{{i}}</div>
+                            </td>
+                            <td>
+                                <span class="label"
+                                      ng-class="{'label-success' : r.threat <= content.limits.safe_limit,
+                                                 'label-warning' :  r.threat > content.limits.safe_limit && r.threat <= content.limits.sus_limit,
+                                                 'label-danger': r.threat > content.limits.sus_limit}">
+                                    {{r.threat}}
+                                </span>
+                            </td>
+                            <td>
+                                <div ng-repeat="i in r.category">{{i}}</div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </uib-tab>
+            <uib-tab ng-repeat="item in content.data"
+                     ng-if="item.meta === 'Hash Connections' && !item.records.error">
+                <uib-tab-heading>{{item.meta}}</uib-tab-heading>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>First Seen</th>
+                            <th>Last Seen</th>
+                            <th>Security Categories</th>
+                            <th>Threat Types</th>
+                            <th>Type</th>
+                            <th>IPs</th>
+                            <th>URLs</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="r in item.records.connections">
+                            <td>{{r.name}}</td>
+                            <td>{{r.firstSeen | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
+                            <td>{{r.lastSeen | date:'yyyy-MM-dd HH:mm:ss Z'}}</td>
+                            <td>
+                                <div ng-repeat="i in r.securityCategories">{{i}}</div>
+                            </td>
+                            <td>
+                                <div ng-repeat="i in r.threatTypes">{{i}}</div>
+                            </td>
+                            <td>{{r.type}}</td>
+                            <td>
+                                <div ng-repeat="i in r.ips">{{i}}</div>
+                            </td>
+                            <td>
+                                <div ng-repeat="i in r.urls">{{i}}</div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </uib-tab>
+        </uib-tabset>
+    </div>
+</div>
+<!-- Dynamic Table
+                <table class="table table-hover table-striped table-bordered" ng-if="item.records.length > 0">
+                    <thead class="thead-light">
+                    <tr>
+                        <th>#</th>
+                        <th ng-repeat="(key,value) in item.records[0]">{{key}}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="r in item.records">
+                        <td>{{$index+1}}</td>
+                        <td ng-repeat="(key,value) in item.records">{{value}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+-->
+<div class="panel panel-info" ng-if="success && item.records.length == 0">
+    <div class="panel-heading">
+        Umbrella Report
+    </div>
+    <div class="panel-body">
+        <b>No recent hits.</b>
+    </div>
+</div>

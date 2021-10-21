@@ -1,0 +1,454 @@
+<!-- General error  -->
+<div class="panel panel-danger" ng-if="!success">
+    <div class="panel-heading">
+        <strong>{{(artifact.data || artifact.attachment.name) | fang}}</strong>
+    </div>
+    <div class="panel-body">
+        <dl class="dl-horizontal" ng-if="content.errorMessage">
+            <dt><i class="fa fa-warning"></i> Umbrella Report:</dt>
+            <dd class="wrap">{{content.errorMessage}}</dd>
+        </dl>
+    </div>
+</div>
+
+<!-- Success -->
+<div class="panel panel-info" ng-if="success && content.data.length > 0">
+    <div class="panel-heading">
+        Umbrella Report
+    </div>
+    <div class="panel-body">
+        <uib-tabset active="active">
+            <uib-tab>
+                <uib-tab-heading>Summary</uib-tab-heading>
+                <div class="panel panel-danger" ng-repeat="item in content.data"
+                     ng-if="item.records.error">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{item.meta}}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <b>{{item.records.error}}</b>
+                    </div>
+                </div>
+                <div class="panel table-responsive"
+                     ng-repeat="item in content.data"
+                     ng-if="item.meta === 'Status'"
+                     ng-class="{'panel-success' : item.status == 1,
+                                'panel-warning' :  item.status == 0,
+                                'panel-danger': item.status == -1}">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{item.meta}}</h3>
+                    </div>
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <tr>
+                            <td>
+                                {{item.query}}
+                            </td>
+                            <td><span class="label" ng-class="{'label-success' : item.status == 1,  'label-warning' :  item.status == 0,
+                            'label-danger': item.status == -1}">
+                            {{item.status == -1 ? 'malicious' :
+                                item.status == 1 ? 'safe' :
+                                'undetermined'}}
+                        </span>
+
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="panel table-responsive"
+                     ng-repeat="item in content.data"
+                     ng-if="item.meta === 'Risk Score'"
+                     ng-class="{'panel-success' : item.risk_score <= content.limits.safe_limit,
+                                'panel-warning' :  item.risk_score > content.limits.safe_limit && item.risk_score <= content.limits.sus_limit,
+                                'panel-danger': item.risk_score > content.limits.sus_limit}">
+                    <div class="panel-heading"><h3 class="panel-title">{{item.meta}}</h3></div>
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <tbody>
+                        <tr>
+                            <th>Risk Score</th>
+                            <th>
+                                <span class="label"
+                                      ng-class="{'label-success' : item.risk_score <= content.limits.safe_limit,
+                                                 'label-warning' :  item.risk_score > content.limits.safe_limit && item.risk_score <= content.limits.sus_limit,
+                                                 'label-danger': item.risk_score > content.limits.sus_limit}">
+                                    {{item.risk_score}}
+                                </span>
+                            </th>
+                        </tr>
+                        <tr ng-repeat="r in item['indicators']">
+                            <td>{{r['indicator']}}</td>
+                            <td ng-if="r['indicator'] !== 'Umbrella Block Status'">
+                                <span class="label"
+                                      ng-class="{'label-success' : r['normalized_score'] <= content.limits.safe_limit,
+                                                 'label-warning' :  r['normalized_score'] > content.limits.safe_limit && r['normalized_score'] <= content.limits.sus_limit,
+                                                 'label-danger': r['normalized_score'] > content.limits.sus_limit}">
+                                    {{r['normalized_score'] == null ? 'N/A' : r['normalized_score']}}
+                                </span>
+                            </td>
+                            <td ng-if="r['indicator'] === 'Umbrella Block Status'">
+                                <span class="label"
+                                      ng-class="{'label-success' : r['normalized_score'] <= content.limits.safe_limit,
+                                                 'label-danger': r['normalized_score'] > 0}">
+                                {{r['normalized_score'] == 1 ? 'Blocked' : 'Not Blocked'}}
+                                </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel panel-info table-responsive" ng-repeat="item in content.data"
+                     ng-if="item.records.length > 0 && item.meta === 'WHOIS History'">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">WHOIS</h3>
+                    </div>
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <tr>
+                            <td>Registrar Name</td>
+                            <td>{{item.records[0].registrarName}}</td>
+                        </tr>
+                        <tr>
+                            <td>Registrar IANA ID</td>
+                            <td>{{item.records[0].registrarIANAID}}</td>
+                        </tr>
+                        <tr>
+                            <td>Created</td>
+                            <td>{{item.records[0].created}}</td>
+                        </tr>
+                        <tr>
+                            <td>Updated</td>
+                            <td>{{item.records[0].updated}}</td>
+                        </tr>
+                        <tr>
+                            <td>Expires</td>
+                            <td>{{item.records[0].expires}}</td>
+                        </tr>
+                        <tr>
+                            <td>Name Servers</td>
+                            <td>
+                                <div ng-repeat="i in item.records[0].nameServers">{{i}}</div>
+                            </td>
+                        </tr>
+                        <tr ng-if="item.records[0].registrantName">
+                            <td>Registrant</td>
+                            <td>
+                                <div>{{item.records[0].registrantName}}</div>
+                                <div>{{item.records[0].registrantOrganization}}</div>
+                                <div ng-repeat="i in item.records[0].registrantStreet">{{i}}</div>
+                                <div ng-if="item.records[0].registrantCity">
+                                    {{item.records[0].registrantCity}}, {{item.records[0].registrantState}}
+                                    {{item.records[0].registrantPostalCode}}
+                                </div>
+                                <div ng-if="item.records[0].registrantCountry">
+                                    {{item.records[0].registrantCountry}}
+                                </div>
+                                <div ng-if="item.records[0].registrantEmail">
+                                    {{item.records[0].registrantEmail}}
+                                </div>
+                                <div ng-if="item.records[0].registrantTelephone">Phone:
+                                    {{item.records[0].registrantTelephone}}
+                                    {{item.records[0].registrantTelephoneExt}}
+                                </div>
+                                <div ng-if="item.records[0].registrantFax">Fax:
+                                    {{item.records[0].registrantFax}}
+                                    {{item.records[0].registrantFaxExt}}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr ng-if="item.records[0].administrativeContactName">
+                            <td>Administrative Contact</td>
+                            <td>
+                                <div>{{item.records[0].administrativeContactName}}</div>
+                                <div>{{item.records[0].administrativeContactOrganization}}</div>
+                                <div ng-repeat="i in item.records[0].administrativeContactStreet">{{i}}</div>
+                                <div ng-if="item.records[0].administrativeContactCity">
+                                    {{item.records[0].administrativeContactCity}},
+                                    {{item.records[0].administrativeContactState}}
+                                    {{item.records[0].administrativeContactPostalCode}}
+                                </div>
+                                <div ng-if="item.records[0].administrativeContactCountry">
+                                    {{item.records[0].administrativeContactCountry}}
+                                </div>
+                                <div ng-if="item.records[0].administrativeContactEmail">
+                                    {{item.records[0].administrativeContactEmail}}
+                                </div>
+                                <div ng-if="item.records[0].administrativeContactTelephone">Phone:
+                                    {{item.records[0].administrativeContactTelephone}}
+                                    {{item.records[0].administrativeContactTelephoneExt}}
+                                </div>
+                                <div ng-if="item.records[0].administrativeContactFax">Fax:
+                                    {{item.records[0].administrativeContactFax}}
+                                    {{item.records[0].administrativeContactFaxExt}}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr ng-if="item.records[0].billingContactName">
+                            <td>Billing Contact</td>
+                            <td>
+                                <div>{{item.records[0].billingContactName}}</div>
+                                <div>{{item.records[0].billingContactOrganization}}</div>
+                                <div ng-repeat="i in item.records[0].billingContactStreet">{{i}}</div>
+                                <div ng-if="item.records[0].billingContactCity">
+                                    {{item.records[0].billingContactCity}}, {{item.records[0].billingContactState}}
+                                    {{item.records[0].billingContactPostalCode}}
+                                </div>
+                                <div ng-if="item.records[0].billingContactCountry">
+                                    {{item.records[0].billingContactCountry}}
+                                </div>
+                                <div ng-if="item.records[0].billingContactEmail">
+                                    {{item.records[0].billingContactEmail}}
+                                </div>
+                                <div ng-if="item.records[0].billingContactFax">Fax:
+                                    {{item.records[0].billingContactFax}}
+                                    {{item.records[0].billingContactFaxExt}}
+                                </div>
+                                <div ng-if="item.records[0].billingContactTelephone">Phone:
+                                    {{item.records[0].billingContactTelephone}}
+                                    {{item.records[0].billingContactTelephoneExt}}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr ng-if="item.records[0].technicalContactName">
+                            <td>Technical Contact</td>
+                            <td>
+                                <div>{{item.records[0].technicalContactName}}</div>
+                                <div>{{item.records[0].technicalContactOrganization}}</div>
+                                <div ng-repeat="i in item.records[0].technicalContactStreet">{{i}}</div>
+                                <div ng-if="item.records[0].technicalContactCity">
+                                    {{item.records[0].technicalContactCity}}, {{item.records[0].technicalContactState}}
+                                    {{item.records[0].technicalContactPostalCode}}
+                                </div>
+                                <div ng-if="item.records[0].technicalContactCountry">
+                                    {{item.records[0].technicalContactCountry}}
+                                </div>
+                                <div ng-if="item.records[0].technicalContactEmail">
+                                    {{item.records[0].technicalContactEmail}}
+                                </div>
+                                <div ng-if="item.records[0].technicalContactTelephone">Phone:
+                                    {{item.records[0].technicalContactTelephone}}
+                                    {{item.records[0].technicalContactTelephoneExt}}
+                                </div>
+                                <div ng-if="item.records[0].technicalContactFax">Fax:
+                                    {{item.records[0].technicalContactFax}}
+                                    {{item.records[0].technicalContactFaxExt}}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr ng-if="item.records[0].zoneContactName">
+                            <td>zone Contact</td>
+                            <td>
+                                <div>{{item.records[0].zoneContactName}}</div>
+                                <div>{{item.records[0].zoneContactOrganization}}</div>
+                                <div ng-repeat="i in item.records[0].zoneContactStreet">{{i}}</div>
+                                <div ng-if="item.records[0].zoneContactCity">
+                                    {{item.records[0].zoneContactCity}}, {{item.records[0].zoneContactState}}
+                                    {{item.records[0].zoneContactPostalCode}}
+                                </div>
+                                <div ng-if="item.records[0].zoneContactCountry">
+                                    {{item.records[0].zoneContactCountry}}
+                                </div>
+                                <div ng-if="item.records[0].zoneContactEmail">
+                                    {{item.records[0].zoneContactEmail}}
+                                </div>
+                                <div ng-if="item.records[0].zoneContactTelephone">Phone:
+                                    {{item.records[0].zoneContactTelephone}}
+                                    {{item.records[0].zoneContactTelephoneExt}}
+                                </div>
+                                <div ng-if="item.records[0].zoneContactFax">Fax:
+                                    {{item.records[0].zoneContactFax}}
+                                    {{item.records[0].zoneContactFaxExt}}
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="panel panel-info table-responsive" ng-repeat="item in content.data"
+                     ng-if="item.records.length > 0 && item.meta === 'BGP'">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">BGP</h3>
+                    </div>
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>
+                                CIDR
+                            </th>
+                            <th>
+                                ASN
+                            </th>
+                            <th>
+                                IR
+                            </th>
+                            <th>
+                                Description
+                            </th>
+                            <th>Creation Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="r in item.records">
+                            <td>{{r.cidr}}</td>
+                            <td>{{r.asn}}</td>
+                            <td>{{r.ir == 1 ? 'AfriNIC' :
+                                r.ir == 2 ? 'APNIC' :
+                                r.ir == 3 ? 'ARIN' :
+                                r.ir == 4 ? 'LACNIC' :
+                                r.ir == 5 ? 'RIPE NCC' :
+                                'Unknown / Not Available'
+                                }}
+                            </td>
+                            <td>{{r.description}}</td>
+                            <td>{{r.creation_date}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </uib-tab>
+            <uib-tab ng-repeat="item in content.data"
+                     ng-if="item.records.length > 0 && (item.meta === 'PDNS Name' || item.meta === 'PDNS Domain'|| item.meta === 'PDNS IP')">
+                <uib-tab-heading>{{item.meta}}</uib-tab-heading>
+                <div class="panel panel-info" ng-if="item.pageInfo">
+                    <div class="text-danger" ng-if="item.recordInfo.totalMaliciousDomain > 0">Malicious Domains:
+                        {{item.recordInfo.totalMaliciousDomain}}
+                    </div>
+                    <div>Total Records: {{item.pageInfo.totalNumRecords}}</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>
+                                Min TTL
+                            </th>
+                            <th>
+                                Max TTL
+                            </th>
+                            <th>
+                                Type
+                            </th>
+                            <th>
+                                RR
+                            </th>
+                            <th>Content Categories</th>
+                            <th>
+                                First Seen
+                            </th>
+                            <th>
+                                Last Seen
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="r in item.records | orderBy:['type','-lastSeenISO']">
+                            <td>{{r.minTtl}}</td>
+                            <td>{{r.maxTtl}}</td>
+                            <td>{{r.type}}</td>
+                            <td>{{r.rr}}</td>
+                            <td>
+                                <div ng-repeat="i in r.contentCategories">{{i}}</div>
+                            </td>
+                            <td>{{r.firstSeenISO}}</td>
+                            <td>{{r.lastSeenISO}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </uib-tab>
+            <uib-tab ng-repeat="item in content.data"
+                     ng-if="item.records.length > 0 && item.meta === 'WHOIS History'">
+                <uib-tab-heading>{{item.meta}}</uib-tab-heading>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered table-condensed">
+                        <thead>
+                        <tr>
+                            <th>Registrar Name</th>
+                            <th>Registrar IANA ID</th>
+                            <th>Registrant</th>
+                            <th>Administrative Contact</th>
+                            <th>Created</th>
+                            <th>Updated</th>
+                            <th>Expires</th>
+                            <th>Name Servers</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="r in item.records | orderBy:'-expires'">
+                            <td>{{r.registrarName}}</td>
+                            <td>{{r.registrarIANAID}}</td>
+                            <td>
+                                <div>{{r.registrantName}}</div>
+                                <div>{{r.registrantOrganization}}</div>
+                                <div ng-repeat="i in r.registrantStreet">{{i}}</div>
+                                <div ng-if="r.registrantCity">
+                                    {{r.registrantCity}}, {{r.registrantState}}
+                                    {{r.registrantPostalCode}}
+                                </div>
+                                <div ng-if="r.registrantCountry">
+                                    {{r.registrantCountry}}
+                                </div>
+                                <div ng-if="r.registrantEmail">
+                                    {{r.registrantEmail}}
+                                </div>
+                                <div ng-if="r.registrantTelephone">Phone:
+                                    {{r.registrantTelephone}}
+                                    {{r.registrantTelephoneExt}}
+                                </div>
+                                <div ng-if="r.registrantFax">Fax:
+                                    {{r.registrantFax}}
+                                    {{r.registrantFaxExt}}
+                                </div>
+                            </td>
+                            <td>
+                                <div>{{r.administrativeContactName}}</div>
+                                <div>{{r.administrativeContactOrganization}}</div>
+                                <div ng-repeat="i in r.administrativeContactStreet">{{i}}</div>
+                                <div ng-if="r.administrativeContactCity">
+                                    {{r.administrativeContactCity}}, {{r.administrativeContactState}}
+                                    {{r.administrativeContactPostalCode}}
+                                </div>
+                                <div ng-if="r.administrativeContactCountry">{{r.administrativeContactCountry}}</div>
+                                <div ng-if="r.administrativeContactEmail">{{r.administrativeContactEmail}}</div>
+                                <div ng-if="r.administrativeContactFax">{{r.administrativeContactFax}}
+                                    {{r.administrativeContactFaxExt}}
+                                </div>
+                                <div ng-if="r.administrativeContactTelephone">{{r.administrativeContactTelephone}}
+                                    {{r.administrativeContactTelephoneExt}}
+                                </div>
+                            </td>
+                            <td>{{r.created}}</td>
+                            <td>{{r.updated}}</td>
+                            <td>{{r.expires}}</td>
+                            <td>
+                                <div ng-repeat="i in r.nameServers">{{i}}</div>
+                            </td>
+                        </tr>
+                        </tbody>
+                        </tr>
+                    </table>
+                </div>
+            </uib-tab>
+        </uib-tabset>
+    </div>
+</div>
+<!-- Dynamic Table
+                <table class="table table-hover table-striped table-bordered" ng-if="item.records.length > 0">
+                    <thead class="thead-light">
+                    <tr>
+                        <th>#</th>
+                        <th ng-repeat="(key,value) in item.records[0]">{{key}}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="r in item.records">
+                        <td>{{$index+1}}</td>
+                        <td ng-repeat="(key,value) in item.records">{{value}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+-->
+<div class="panel panel-info" ng-if="success && item.records.length == 0">
+    <div class="panel-heading">
+        Umbrella Report
+    </div>
+    <div class="panel-body">
+        <b>No recent hits.</b>
+    </div>
+</div>

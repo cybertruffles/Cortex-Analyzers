@@ -1,0 +1,61 @@
+{
+  "name": "Umbrella_Report",
+  "version": "2.0",
+  "author": "Darren Sherman",
+  "license": "MIT",
+  "url": "https://github.com/cybertruffles/Cortex-Analyzers/",
+  "description": "Query the Umbrella Reporting API for recent DNS queries and their status.",
+  "dataTypeList": [
+    "domain",
+    "fqdn",
+    "ip",
+    "url"
+  ],
+  "command": "Umbrella/Umbrella.py",
+  "baseConfig": "Umbrella",
+  "config": {
+    "check_tlp": true,
+    "max_tlp": 2,
+    "check_pap": true,
+    "max_pap": 2,
+    "service": "report"
+  },
+  "configurationItems": [
+    {
+      "name": "organization_name",
+      "description": "Org Name that corresponds to Ord ID",
+      "type": "string",
+      "multi": true,
+      "required": true
+    },
+    {
+      "name": "organization_id",
+      "description": "Org ID from Umbrella Admin Console.",
+      "type": "string",
+      "multi": true,
+      "required": true
+    },
+    {
+      "name": "api_key",
+      "description": "Api Key provided by Umbrella Admin Console.",
+      "type": "string",
+      "multi": false,
+      "required": true
+    },
+    {
+      "name": "api_secret",
+      "description": "Api Secret provided by Umbrella Admin Console.",
+      "type": "string",
+      "multi": false,
+      "required": true
+    },
+    {
+      "name": "query_limit",
+      "description": "Maximum number of results to return.",
+      "type": "number",
+      "multi": false,
+      "required": false,
+      "default": 1000
+    }
+  ]
+}
